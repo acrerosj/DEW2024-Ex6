@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Lista de empleados  <a href="index.html">Volver</a></h1>
+  <main>
+    <ul id="employeeList"></ul>
+  </main>
+  <script>
+    const employeeList = document.getElementById('employeeList');
+    let markedEmployees = JSON.parse(localStorage.getItem('markedEmployees')) || [];
+
+    fetch('http://localhost:3000/api/employee')
+      .then(response => response.json())
+      .then(employees => {
+        employees.forEach(employee => {
+          const li = document.createElement('li');
+          li.textContent = employee.name + ' | ' + employee.role + ' | ' + employee.hourCost + "€/hora";
+          li.dataset.id = employee.id;
+          employeeList.appendChild(li);
+          if (markedEmployees.includes(employee.id)) {
+            li.classList.add('marked');
+          }
+        });
+      });
+
+      employeeList.addEventListener('click', (event) => {
+        if (event.target.tagName === 'LI') {
+        const id = parseInt(event.target.dataset.id);
+        if (event.target.classList.contains('marked')) {
+          event.target.classList.remove('marked');
+          markedEmployees = markedEmployees.filter(employeeId => employeeId !== id);
+        } else {
+          event.target.classList.add('marked');
+          markedEmployees.push(parseInt(id));
+        }
+
+        localStorage.setItem('markedEmployees', JSON.stringify(markedEmployees));
+        }
+      });
+
+  </script>
+</body>
+</html>

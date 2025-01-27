@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Lista de proyectos <a href="index.html">Volver</a></h1>
+  <main>
+    <ul id="projectList"></ul>
+    <div id="detailProject" class="hidden">
+      <h2>Detalles del proyecto</h2>
+      <h3>Nombre del proyecto</h3>
+      <p>Descripción del proyecto</p>
+      <p>Número de tareas: <span id="taskCount"></span></p>
+      <p>Número de horas: <span id="totalHours"></span></p>
+      <p><button id="deleteProject">Borrar Projecto</button></p>
+      <button id="showTasks">Ver tareas</button>
+      <ul id="tasksList"></ul>
+    </div>
+  </main>
+
+  <script>
+    const projectList = document.getElementById('projectList');
+    const detailProject = document.getElementById('detailProject');
+    const tasksButton = document.getElementById('showTasks');
+    const tasksList = document.getElementById('tasksList');
+    const deleteProjectButton = document.getElementById('deleteProject');
+
+    let current_project_id = null;
+
+    fetch('http://localhost:3000/api/project')
+      .then(response => response.json())
+      .then(projects => {
+        projects.forEach(project => {
+          const li = document.createElement('li');
+          li.textContent = project.name;
+          li.dataset.id = project.id;
+          projectList.appendChild(li);
+        });
+      });
+
+    projectList.addEventListener('click', event => {
+      if (event.target.tagName !== 'LI') {
+        return;
+      }
+      const projectId = event.target.dataset.id;
+      fetch('http://localhost:3000/api/project/'+projectId)
+        .then(response => response.json())
+        .then(project => {
+          console.log(project);
+          current_project_id = project.id;
+
+          detailProject.querySelector('h3').textContent = project.name;
+          detailProject.querySelector('p').textContent = project.description;
+          detailProject.querySelector('#taskCount').textContent = project.taskCount;
+          detailProject.querySelector('#totalHours').textContent = project.totalHours;
+          tasksList.innerHTML = '';
+          if (project.taskCount > 0) {
+            tasksButton.style.display = 'block';
+            tasksButton.onclick = () => showTasks(project.id);
+          } else {
+            tasksButton.style.display = 'none';
+          }
+          detailProject.classList.remove('hidden');
+        });
+    });
+
+    tasksButton.addEventListener('click', () => {
+      showTasks();
+    });
+
+    deleteProjectButton.addEventListener('click', () => {
+      fetch('http://localhost:3000/api/project/'+current_project_id, {
+        method: 'DELETE'
+      })
+        .then(response => {
+          if (response.ok) {
+            alert('Project deleted');
+            detailProject.classList.add('hidden');
+            projectList.querySelector(`li[data-id="${current_project_id}"]`).remove();
+          } else {
+            alert('Error deleting project');
+          }
+        });
+    });
+
+
+    function showTasks() {
+      fetch('http://localhost:3000/api/project/'+current_project_id+'/task')
+        .then(response => response.json())
+        .then(tasks => {
+          console.log(tasks)
+          tasksList.innerHTML = '';
+          tasks.forEach(task => {
+            console.log(task);
+            const li = document.createElement('li');
+            li.textContent = `Tarea: ${task.concept} | Horas: ${task.duration}`;
+            tasksList.appendChild(li);
+          });
+        });
+    }
+  </script>
+</body>
+</html>
