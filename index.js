@@ -16,6 +16,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Routes
 app.use('/api/project', require('./routes/project'));
 app.use('/api/task', require('./routes/task'));
+app.use('/api/employee', require('./routes/employee'));
+app.use('/api/assignment', require('./routes/assignment'));
+
 
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
