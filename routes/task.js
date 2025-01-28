@@ -18,10 +18,11 @@ router.get('/:id', (req, res) => {
 });
 
 router.post('/', (req, res) => {
-  const { project_id, concept, duration } = req.body;
+  let { project_id, concept, duration } = req.body;
   if (!project_id || !concept || !duration) {
     return res.status(400).json({error: 'The project_id, concept and duration fields are required'});
   }
+  project_id = parseInt(project_id);
   const id = Math.max(...tasks.map(task => task.id)) + 1;
   const task = { id, project_id, concept, duration };
   tasks.push(task);
